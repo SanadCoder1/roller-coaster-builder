@@ -6,6 +6,7 @@ export type CoasterMode = "build" | "ride" | "preview";
 export interface TrackPoint {
   id: string;
   position: THREE.Vector3;
+  tilt: number;
 }
 
 interface RollerCoasterState {
@@ -25,6 +26,7 @@ interface RollerCoasterState {
   setMode: (mode: CoasterMode) => void;
   addTrackPoint: (position: THREE.Vector3) => void;
   updateTrackPoint: (id: string, position: THREE.Vector3) => void;
+  updateTrackPointTilt: (id: string, tilt: number) => void;
   removeTrackPoint: (id: string) => void;
   selectPoint: (id: string | null) => void;
   clearTrack: () => void;
@@ -74,7 +76,7 @@ export const useRollerCoaster = create<RollerCoasterState>((set, get) => ({
   addTrackPoint: (position) => {
     const id = `point-${++pointCounter}`;
     set((state) => ({
-      trackPoints: [...state.trackPoints, { id, position: position.clone() }],
+      trackPoints: [...state.trackPoints, { id, position: position.clone(), tilt: 0 }],
     }));
   },
   
@@ -82,6 +84,14 @@ export const useRollerCoaster = create<RollerCoasterState>((set, get) => ({
     set((state) => ({
       trackPoints: state.trackPoints.map((point) =>
         point.id === id ? { ...point, position: position.clone() } : point
+      ),
+    }));
+  },
+  
+  updateTrackPointTilt: (id, tilt) => {
+    set((state) => ({
+      trackPoints: state.trackPoints.map((point) =>
+        point.id === id ? { ...point, tilt } : point
       ),
     }));
   },

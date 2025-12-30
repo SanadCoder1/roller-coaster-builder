@@ -1,20 +1,21 @@
 import { useRef, useEffect, useState } from "react";
 import { ThreeEvent } from "@react-three/fiber";
-import { TransformControls } from "@react-three/drei";
+import { TransformControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { useRollerCoaster } from "@/lib/stores/useRollerCoaster";
 
 interface TrackPointProps {
   id: string;
   position: THREE.Vector3;
+  tilt: number;
   index: number;
 }
 
-export function TrackPoint({ id, position, index }: TrackPointProps) {
+export function TrackPoint({ id, position, tilt, index }: TrackPointProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const transformRef = useRef<any>(null);
   const [meshReady, setMeshReady] = useState(false);
-  const { selectedPointId, selectPoint, updateTrackPoint, mode, setIsDraggingPoint } = useRollerCoaster();
+  const { selectedPointId, selectPoint, updateTrackPoint, updateTrackPointTilt, mode, setIsDraggingPoint } = useRollerCoaster();
   
   const isSelected = selectedPointId === id;
   
@@ -64,6 +65,11 @@ export function TrackPoint({ id, position, index }: TrackPointProps) {
     selectPoint(id);
   };
   
+  const handleTiltChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTilt = parseFloat(e.target.value);
+    updateTrackPointTilt(id, newTilt);
+  };
+  
   if (mode === "ride") return null;
   
   return (
@@ -82,15 +88,38 @@ export function TrackPoint({ id, position, index }: TrackPointProps) {
       </mesh>
       
       {isSelected && meshReady && meshRef.current && (
-        <TransformControls
-          ref={transformRef}
-          object={meshRef.current}
-          mode="translate"
-          size={0.75}
-          showX={true}
-          showY={true}
-          showZ={true}
-        />
+        <>
+          <TransformControls
+            ref={transformRef}
+            object={meshRef.current}
+            mode="translate"
+            size={0.75}
+            showX={true}
+            showY={true}
+            showZ={true}
+          />
+          
+          <Html position={[position.x, position.y + 2, position.z]} center>
+            <div 
+              className="bg-black/80 text-white p-2 rounded text-xs whitespace-nowrap"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <div className="flex items-center gap-2">
+                <span>Tilt:</span>
+                <input
+                  type="range"
+                  min="-45"
+                  max="45"
+                  step="5"
+                  value={tilt}
+                  onChange={handleTiltChange}
+                  className="w-20 h-2 cursor-pointer"
+                />
+                <span className="w-8">{tilt}°</span>
+              </div>
+            </div>
+          </Html>
+        </>
       )}
     </group>
   );

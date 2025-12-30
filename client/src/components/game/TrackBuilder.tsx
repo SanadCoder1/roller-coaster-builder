@@ -81,6 +81,7 @@ export function TrackBuilder() {
           key={point.id}
           id={point.id}
           position={point.position}
+          tilt={point.tilt}
           index={index}
         />
       ))}

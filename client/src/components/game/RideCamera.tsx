@@ -2,7 +2,7 @@ import { useRef, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useRollerCoaster } from "@/lib/stores/useRollerCoaster";
-import { getTrackCurve } from "./Track";
+import { getTrackCurve, getTrackTiltAtProgress } from "./Track";
 
 export function RideCamera() {
   const { camera } = useThree();
@@ -11,6 +11,7 @@ export function RideCamera() {
   const curveRef = useRef<THREE.CatmullRomCurve3 | null>(null);
   const previousCameraPos = useRef(new THREE.Vector3());
   const previousLookAt = useRef(new THREE.Vector3());
+  const previousRoll = useRef(0);
   const maxHeightReached = useRef(0);
   
   const firstPeakT = useMemo(() => {
@@ -119,8 +120,13 @@ export function RideCamera() {
     previousCameraPos.current.lerp(targetCameraPos, 0.1);
     previousLookAt.current.lerp(targetLookAt, 0.1);
     
+    const tilt = getTrackTiltAtProgress(trackPoints, newProgress, isLooped);
+    const targetRoll = (tilt * Math.PI) / 180;
+    previousRoll.current = previousRoll.current + (targetRoll - previousRoll.current) * 0.1;
+    
     camera.position.copy(previousCameraPos.current);
     camera.lookAt(previousLookAt.current);
+    camera.rotateZ(-previousRoll.current);
   });
   
   return null;
